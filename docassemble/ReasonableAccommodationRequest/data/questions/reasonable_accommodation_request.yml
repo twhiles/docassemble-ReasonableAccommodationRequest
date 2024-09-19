@@ -1,0 +1,288 @@
+---
+include:
+  - docassemble.AssemblyLine:assembly_line.yml
+---
+metadata:
+  title: |
+    Reasonable accommodation request
+  short title: |
+    Reasonable accomodation
+  description: |
+    This interview helps someone in Massachusetts request Reasonable Accommodation from Employer.
+  can_I_use_this_form: |
+    If you are a employee, you can use this interview to draft a letter for your employer requesting a reasonable accommodation.
+  before_you_start: |
+    This interview will help you request Reasonable Accommodation from Employer.
+    
+    Before you get started, please gather:
+    
+    1. Employer Contact Information
+    1. Medical Information
+    1. Accommodation Information
+    
+    When you are finished, you will need to:
+    
+    1. Sign
+    1. Email or Mail to Contact Person
+  maturity: production
+  estimated_completion_minutes: 5
+  estimated_completion_delta: 5
+  tags: []
+  authors:
+    - Tiffany Whiles
+  original_form: []
+  original_form_published_on: ""
+  allowed_courts: []
+  typical_role: "na"
+  al_weaver_version: "1.11.0"
+  generated_on: "2024-09-19"
+  languages:
+    - en
+  jurisdiction: NAM-US-US+MA
+  review_date: 2024-09-19
+  form_titles:
+    - Reasonable accommodation request
+  form_numbers: []
+  update_notes: |
+---
+code: |
+  # This controls the default country and list of states in address field questions
+  AL_DEFAULT_COUNTRY = "US"
+---
+code: |
+  # This controls the default state in address field questions
+  AL_DEFAULT_STATE = "MA"
+---
+code: |
+  github_repo_name =  'docassemble-ReasonableAccommodationRequest'
+---
+code: |
+  interview_short_title = "Request Reasonable Accommodation from Employer"
+---
+code: |
+  al_form_type = "letter" 
+---
+objects:
+  - users: ALPeopleList.using(there_are_any=True)
+---
+sections:
+  - review_reasonable_accommodation_request: Review your answers
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_reasonable_accommodation_request
+code: |
+  # Set the allowed courts for this interview
+  nav.set_section("review_reasonable_accommodation_request")
+  user_role = "na"
+  user_ask_role = "na"
+  users.gather()
+  set_parts(subtitle=str(users))
+  users[0].employer_name
+  interview_order_reasonable_accommodation_request = True
+---
+###################### Main order ######################
+comment: |
+  This block includes the logic for standalone interviews.
+  Delete mandatory: True to include in another interview
+mandatory: True
+code: |
+  al_intro_screen
+  reasonable_accommodation_request_intro
+  interview_order_reasonable_accommodation_request
+  signature_date
+  # Store anonymous data for analytics / statistics
+  store_variables_snapshot(
+      persistent=True,
+      data={
+          "zip": showifdef("users[0].address.zip"),
+          "reached_interview_end": True,
+      },
+  )
+  reasonable_accommodation_request_download
+---
+id: Reasonable_accommodation_request
+continue button field: reasonable_accommodation_request_intro
+question: |
+  Reasonable accommodation request
+subquestion: |
+  This interview will help you request Reasonable Accommodation from Employer.
+  
+  Before you get started, please gather:
+  
+  1. Employer Contact Information
+  1. Medical Information
+  1. Accommodation Information
+  
+  When you are finished, you will need to:
+  
+  1. Sign
+  1. Email or Mail to Contact Person
+
+  If you are a employee, you can use this interview to draft a letter for your employer requesting a reasonable accommodation.
+
+  Most people take about 5 minutes to complete this interview.
+---
+id: Interview Questions
+question: |
+  Interview Questions
+fields:
+  - "Enter Employer Name": users[0].employer_name
+  - "Enter City Employee Lives In": users[0].employee_address_city
+  - "Enter Type of Accommodation": users[0].employee_accommodation_request
+  - "Enter Job Title or Description of Employee": users[0].job_title
+  - "Enter Employee's Full Name": users[0].employee_address_zip
+  - "Enter Description of Accommodation": users[0].employee_accommodation_request
+  - "Please Sign": users[0].signature_date
+    datatype: date
+  - "Enter Employer Address (Street Address)": users[0].employee_address_line_one
+  - "Enter a contact name for the employer such as someone in the HR Department": users[0].employer_contact_name
+  - "Enter Employer Address (Unit or Floor)": users[0].employer_address_line_two
+  - "Please enter Employee Name": users[0].employee_name
+  - "Enter Employer Address (City)": users[0].employer_address_city
+  - "Please enter a description of the disability": users[0].disability_description
+    required: False
+  - "Enter Employer Address (Street)": users[0].employer_address_line_one
+  - "Please enter date employment started (hire date)": users[0].employment_start_date
+    datatype: date
+  - "Enter Employer Address (Zip Code)": users[0].employer_address_zip
+  - "Enter Employer Address (State)": users[0].employer_address_state
+  - "Enter Employee Address (State)": users[0].employee_address_state
+---
+id: preview reasonable_accommodation_request
+question: |
+  Preview your form before you sign it
+subquestion: |
+  Here is a preview of the form you will sign on the next page.   
+  
+  ${ al_recipient_bundle.as_pdf(key='preview') }
+
+  Click the image to open it in a new tab. Click the "Edit answers" button
+  to edit your answers.
+
+  ${ action_button_html(url_action('review_reasonable_accommodation_request'), label='Edit answers', color='info') }
+  
+  Remember to come back to this window to continue and sign your form.
+continue button field: reasonable_accommodation_request_preview_question    
+---
+code: |
+  signature_fields = ['users[0].signature']
+---
+id: reasonable accommodation request review screen
+event: review_reasonable_accommodation_request
+question: |
+  Review your answers
+review:
+  - Edit: users.revisit
+    button: |
+      **Users**
+
+      % for item in users:
+        * ${ item }
+      % endfor
+---
+continue button field: users.revisit
+question: |
+  Edit users
+subquestion: |
+  ${ users.table }
+
+  ${ users.add_action() }
+---
+table: users.table
+rows: users
+columns:
+  - Employer name: |
+      row_item.employer_name if defined("row_item.employer_name") else ""
+  - Employee address: |
+      row_item.employee_address if defined("row_item.employee_address.state") else ""
+  - Employee: |
+      row_item.employee if defined("row_item.employee.accommodation_request") else ""
+  - Job title: |
+      row_item.job_title if defined("row_item.job_title") else ""
+  - Employee accommodation request: |
+      row_item.employee_accommodation_request if defined("row_item.employee_accommodation_request") else ""
+  - Signature date: |
+      row_item.signature_date if defined("row_item.signature_date") else ""
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Employer contact name: |
+      row_item.employer_contact_name if defined("row_item.employer_contact_name") else ""
+  - Signature: |
+      row_item.signature if defined("row_item.signature") else ""
+  - Employer address: |
+      row_item.employer_address if defined("row_item.employer_address.state") else ""
+  - Employee name: |
+      row_item.employee_name if defined("row_item.employee_name") else ""
+  - Disability description: |
+      row_item.disability_description if defined("row_item.disability_description") else ""
+  - Employment start date: |
+      row_item.employment_start_date if defined("row_item.employment_start_date") else ""
+edit:
+  - employer_name
+  - employee_address_state
+  - employee.accommodation_request
+  - job_title
+  - employee_accommodation_request
+  - signature_date
+  - name_first
+  - employer_contact_name
+  - signature
+  - employer_address_state
+  - employee_name
+  - disability_description
+  - employment_start_date
+confirm: True
+
+---
+id: download reasonable_accommodation_request
+event: reasonable_accommodation_request_download
+question: |
+  All done
+subquestion: |
+  Thank you ${users}. Your form is ready to download and deliver.
+  
+  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_reasonable_accommodation_request'), label='Edit answers', color='info') }
+  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=True) }
+
+progress: 100
+---
+# ALDocument objects specify the metadata for each template
+objects:
+  - reasonable_accommodation_request_Post_interview_instructions: ALDocument.using(title="Instructions", filename="reasonable_accommodation_request_next_steps.docx", enabled=True, has_addendum=False)
+  - reasonable_accommodation_request_attachment: ALDocument.using(title="Reasonable accommodation request", filename="reasonable_accommodation_request", enabled=True, has_addendum=False, )
+---
+# Bundles group the ALDocuments into separate downloads, such as for court and for the user
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[reasonable_accommodation_request_Post_interview_instructions, reasonable_accommodation_request_attachment], filename="reasonable_accommodation_request", title="All forms to download for your records", enabled=True)
+  - al_recipient_bundle: ALDocumentBundle.using(elements=[reasonable_accommodation_request_attachment],  filename="reasonable_accommodation_request", title="All forms to file", enabled=True)
+---
+# Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
+# used for "preview" and "final" keys, and logic in the template checks the value of 
+# `i` to show or hide the user's signature
+attachment:
+  name: Post-interview-Instructions
+  filename: reasonable_accommodation_request_next_steps
+  docx template file: reasonable_accommodation_request_next_steps.docx
+  variable name: reasonable_accommodation_request_Post_interview_instructions[i]
+  skip undefined: True
+  tagged pdf: True
+---
+attachment:
+  name: reasonable accommodation request
+  filename: reasonable_accommodation_request
+  variable name: reasonable_accommodation_request_attachment[i]
+  skip undefined: True
+  docx template file: reasonable_accommodation_request.docx
+  tagged pdf: True
+
+
+
